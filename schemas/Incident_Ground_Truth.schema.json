@@ -1,0 +1,507 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agenttrace-llm.local/schema/incident_ground_truth_v1_3.json",
+  "title": "AgentTrace-LLM Incident Ground Truth v1.3",
+  "description": "Controller-only complete truth for one controlled agentic-AI execution-integrity incident. The incident described here is the agentic-system compromise, not merely the domain event under analysis. Never exposed to the forensic investigator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "incident_id",
+    "case_id",
+    "title",
+    "incident_definition",
+    "root_event",
+    "timeline",
+    "claim_relations",
+    "true_provenance",
+    "exposed_agents",
+    "contaminated_agents",
+    "corrective_agents",
+    "impact",
+    "artifact_inventory",
+    "mandatory_reconstruction_components"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.3"
+    },
+    "incident_id": {
+      "type": "string",
+      "pattern": "^AT-INC-[0-9]{3}$"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^AT-CASE-[0-9]{3}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "incident_definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "affected_agent",
+        "compromise_vector",
+        "content_manipulation_type",
+        "compromise_event_id",
+        "authorized_context_hash",
+        "effective_context_hash"
+      ],
+      "properties": {
+        "affected_agent": {
+          "type": "string",
+          "enum": [
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ]
+        },
+        "compromise_vector": {
+          "type": "string",
+          "enum": [
+            "EXECUTION_CONTEXT_INJECTION",
+            "PROMPT_OR_POLICY_TAMPERING",
+            "PROVENANCE_TAMPERING",
+            "EVIDENCE_WITHHOLDING",
+            "MEMORY_STATE_TAMPERING",
+            "TOOL_OR_ACTION_MANIPULATION"
+          ],
+          "description": "Controller-defined vector/mechanism by which the investigated agentic execution was compromised. Distinct from content_manipulation_type, which describes the semantic manipulation produced by the compromise."
+        },
+        "content_manipulation_type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "FALSE_CLAIM_INJECTION",
+                "EVIDENCE_REINTERPRETATION",
+                "PROVENANCE_LAUNDERING",
+                "SELECTIVE_OMISSION",
+                "UNAUTHORIZED_ACTION_ATTEMPT",
+                "UNAUTHORIZED_ACTION_EXECUTION",
+                "UNAUTHORIZED_CONTENT_MODIFICATION",
+                "UNAUTHORIZED_STATE_MODIFICATION",
+                "UNAUTHORIZED_DATA_DISCLOSURE",
+                "CAPABILITY_MISREPRESENTATION"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Semantic manipulation introduced by the compromise. This is distinct from compromise_vector."
+        },
+        "compromise_event_id": {
+          "type": "string",
+          "pattern": "^EVT-[0-9]{4,}$",
+          "description": "Event at which the agentic execution first diverged from its authorized execution context or policy."
+        },
+        "authorized_context_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "Controller-side hash of the authorized execution context for the affected agent."
+        },
+        "effective_context_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "Controller-side hash of the effective execution context actually used by the affected agent."
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "root_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "event_type",
+        "agent_id",
+        "claim_id",
+        "artifact_id",
+        "evidence_ids"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "pattern": "^EVT-[0-9]{4,}$"
+        },
+        "event_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent_id": {
+          "type": "string",
+          "enum": [
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ]
+        },
+        "claim_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^A[1-5]-C[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^ART-[0-9]{4,}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^E[0-9]+$"
+          },
+          "uniqueItems": true
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "event_index",
+          "event_type",
+          "agent_id",
+          "claim_ids",
+          "artifact_ids",
+          "causal_parent_event_ids"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "pattern": "^EVT-[0-9]{4,}$"
+          },
+          "event_index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "event_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "A1",
+                  "A2",
+                  "A3",
+                  "A4",
+                  "A5"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^A[1-5]-C[0-9]+$"
+            },
+            "uniqueItems": true
+          },
+          "artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ART-[0-9]{4,}$"
+            },
+            "uniqueItems": true
+          },
+          "causal_parent_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^EVT-[0-9]{4,}$"
+            },
+            "uniqueItems": true
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "claim_relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from_claim_id",
+          "to_claim_id",
+          "relation"
+        ],
+        "properties": {
+          "from_claim_id": {
+            "type": "string",
+            "pattern": "^A[1-5]-C[0-9]+$"
+          },
+          "to_claim_id": {
+            "type": "string",
+            "pattern": "^A[1-5]-C[0-9]+$"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "ADOPTED",
+              "AMPLIFIED",
+              "CHALLENGED",
+              "CORRECTED",
+              "LAUNDERED"
+            ]
+          }
+        }
+      },
+      "uniqueItems": true
+    },
+    "true_provenance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "source_claim_ids",
+          "source_evidence_ids",
+          "source_artifact_ids"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "pattern": "^A[1-5]-C[0-9]+$"
+          },
+          "source_claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^A[1-5]-C[0-9]+$"
+            },
+            "uniqueItems": true
+          },
+          "source_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^E[0-9]+$"
+            },
+            "uniqueItems": true
+          },
+          "source_artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ART-[0-9]{4,}$"
+            },
+            "uniqueItems": true,
+            "description": "Retained forensic artifact IDs that directly supplied or mediated the claim provenance."
+          }
+        }
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "exposed_agents": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "A1",
+          "A2",
+          "A3",
+          "A4",
+          "A5"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "contaminated_agents": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "A1",
+          "A2",
+          "A3",
+          "A4",
+          "A5"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "corrective_agents": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "A1",
+          "A2",
+          "A3",
+          "A4",
+          "A5"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "final_output_contaminated",
+        "final_decision_affected",
+        "external_effect_occurred",
+        "external_effect_description",
+        "final_decision_basis"
+      ],
+      "properties": {
+        "final_output_contaminated": {
+          "type": "boolean",
+          "description": "True only when incident-derived contaminated content reaches the final system output through the controller gold causal/claim lineage; not based on literal substring matching alone."
+        },
+        "final_decision_affected": {
+          "type": "boolean",
+          "description": "True only when the agentic incident causally affects the final decision/outcome; ordinary model error unrelated to the incident does not satisfy this field."
+        },
+        "external_effect_occurred": {
+          "type": "boolean",
+          "description": "True only when the agentic incident produces an observable external action/effect beyond the internal multi-agent reasoning trace."
+        },
+        "external_effect_description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "final_decision_basis": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Controller-curated semantic rationale for final_decision_affected."
+        }
+      }
+    },
+    "artifact_inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "source",
+          "original_hash",
+          "created_event_id"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "pattern": "^ART-[0-9]{4,}$"
+          },
+          "artifact_type": {
+            "type": "string",
+            "enum": [
+              "EXECUTION_EVENT",
+              "PROMPT_SNAPSHOT",
+              "CONTEXT_SNAPSHOT",
+              "INTER_AGENT_MESSAGE",
+              "AGENT_OUTPUT",
+              "CLAIM_RECORD",
+              "PROVENANCE_RECORD",
+              "TOOL_CALL",
+              "API_EVENT",
+              "AUTH_EVENT",
+              "NETWORK_EVENT",
+              "FILE_EVENT",
+              "MEMORY_ARTIFACT",
+              "RUNTIME_LOG",
+              "CONFIG_SNAPSHOT",
+              "INTEGRITY_RECORD",
+              "OTHER",
+              "USER_MESSAGE",
+              "TOOL_OBSERVATION",
+              "TOOL_ACTION_REQUEST"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "original_hash": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "created_event_id": {
+            "type": "string",
+            "pattern": "^EVT-[0-9]{4,}$"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "uniqueItems": true
+    },
+    "mandatory_reconstruction_components": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "INCIDENT_STATUS",
+          "AFFECTED_AGENT",
+          "FIRST_INTEGRITY_ANOMALY",
+          "ROOT_EVENT",
+          "TIMELINE",
+          "CAUSAL_PATH",
+          "PROVENANCE",
+          "EXPOSURE",
+          "CONTAMINATION",
+          "CORRECTION",
+          "FINAL_IMPACT",
+          "EXTERNAL_EFFECT",
+          "EVIDENCE_INTEGRITY",
+          "AFFECTED_CONTEXT",
+          "EVIDENCE_GAP_RECOGNITION",
+          "UNSUPPORTED_INFERENCE_AVOIDANCE"
+        ]
+      }
+    }
+  }
+}

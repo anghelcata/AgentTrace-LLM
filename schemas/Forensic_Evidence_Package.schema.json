@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agenttrace-llm.local/schema/forensic_evidence_package_v1_2.json",
+  "title": "AgentTrace-LLM Forensic Evidence Package v1.2",
+  "description": "Investigator-visible evidence retained after a completed controlled agentic-AI incident. Must not contain hidden benchmark ground truth, evidence-condition/ablation labels, or forensic-investigator/evaluator configuration metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package_id",
+    "incident_id",
+    "case_id",
+    "acquisition",
+    "artifacts",
+    "package_integrity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.2"
+    },
+    "package_id": {
+      "type": "string",
+      "pattern": "^FEP-[0-9]{3}$",
+      "description": "Condition-neutral evidence-package identifier. Experimental evidence-condition labels must not be encoded in investigator-visible identifiers."
+    },
+    "incident_id": {
+      "type": "string",
+      "pattern": "^AT-INC-[0-9]{3}$"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^AT-CASE-[0-9]{3}$"
+    },
+    "acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "acquisition_id",
+        "collection_time",
+        "collector",
+        "source_system"
+      ],
+      "properties": {
+        "acquisition_id": {
+          "type": "string",
+          "pattern": "^ACQ-[0-9]{3}$",
+          "description": "Condition-neutral acquisition identifier."
+        },
+        "collection_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "collector": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_system": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "string",
+          "description": "Investigator-visible acquisition notes only. Must not disclose hidden benchmark truth or the evidence-condition/ablation label."
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "source",
+          "capture_time",
+          "event_order",
+          "content",
+          "content_hash",
+          "integrity_status",
+          "chain_of_custody"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "pattern": "^ART-[0-9]{4,}$"
+          },
+          "artifact_type": {
+            "type": "string",
+            "enum": [
+              "EXECUTION_EVENT",
+              "PROMPT_SNAPSHOT",
+              "CONTEXT_SNAPSHOT",
+              "INTER_AGENT_MESSAGE",
+              "AGENT_OUTPUT",
+              "CLAIM_RECORD",
+              "PROVENANCE_RECORD",
+              "TOOL_CALL",
+              "API_EVENT",
+              "AUTH_EVENT",
+              "NETWORK_EVENT",
+              "FILE_EVENT",
+              "MEMORY_ARTIFACT",
+              "RUNTIME_LOG",
+              "CONFIG_SNAPSHOT",
+              "INTEGRITY_RECORD",
+              "OTHER",
+              "USER_MESSAGE",
+              "TOOL_OBSERVATION",
+              "TOOL_ACTION_REQUEST"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "capture_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "event_order": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content": {
+            "description": "Investigator-visible content captured from the investigated system or its evidence-acquisition process. Do not include forensic-investigator/evaluator runtime configuration unless it was itself part of the investigated incident."
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "integrity_status": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "HASH_MISMATCH",
+              "UNVERIFIED"
+            ],
+            "description": "Integrity assessment available from the acquisition process for this retained artifact: VERIFIED, HASH_MISMATCH, or UNVERIFIED."
+          },
+          "related_artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ART-[0-9]{4,}$"
+            },
+            "uniqueItems": true,
+            "default": []
+          },
+          "chain_of_custody": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "step_index",
+                "action",
+                "actor",
+                "timestamp",
+                "artifact_hash"
+              ],
+              "properties": {
+                "step_index": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "action": {
+                  "type": "string",
+                  "enum": [
+                    "CREATED",
+                    "CAPTURED",
+                    "TRANSFERRED",
+                    "VERIFIED",
+                    "COPIED",
+                    "EXAMINED"
+                  ]
+                },
+                "actor": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "artifact_hash": {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "notes": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "uniqueItems": true
+    },
+    "package_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_hash",
+        "artifact_count"
+      ],
+      "properties": {
+        "manifest_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 hash of the canonical retained-artifact manifest for this package."
+        },
+        "artifact_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of retained artifacts in this package."
+        }
+      }
+    },
+    "investigator_visible_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Optional investigator-visible notes. Must not disclose hidden benchmark truth or evidence-condition/ablation labels."
+    }
+  }
+}

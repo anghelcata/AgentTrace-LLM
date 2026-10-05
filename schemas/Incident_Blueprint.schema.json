@@ -1,0 +1,470 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agenttrace-llm.local/schema/incident_blueprint_v1_2.json",
+  "title": "AgentTrace-LLM Deterministic Incident Blueprint v1.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "blueprint_version",
+    "case_id",
+    "incident_id",
+    "title",
+    "domain",
+    "investigation_question",
+    "evidence",
+    "authorized_role_prompts",
+    "agent_outputs",
+    "incident",
+    "claim_relations",
+    "true_provenance",
+    "exposed_agents",
+    "contaminated_agents",
+    "corrective_agents",
+    "impact",
+    "external_action"
+  ],
+  "properties": {
+    "blueprint_version": {
+      "const": "1.0"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^AT-CASE-[0-9]{3}$"
+    },
+    "incident_id": {
+      "type": "string",
+      "pattern": "^AT-INC-[0-9]{3}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "investigation_question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_type",
+          "content"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E[0-9]+$"
+          },
+          "source_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1
+          },
+          "available_after_agent": {
+            "type": "string",
+            "enum": [
+              "A1",
+              "A2",
+              "A3",
+              "A4",
+              "A5"
+            ],
+            "description": "Optional controller-only availability gate. When present, this evidence is captured after the named agent output and is unavailable to that agent and all earlier agents."
+          }
+        }
+      }
+    },
+    "authorized_role_prompts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5"
+      ],
+      "properties": {
+        "A1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "A2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "A3": {
+          "type": "string",
+          "minLength": 1
+        },
+        "A4": {
+          "type": "string",
+          "minLength": 1
+        },
+        "A5": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "agent_outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5"
+      ],
+      "properties": {
+        "A1": {
+          "$ref": "#/$defs/agentOutput"
+        },
+        "A2": {
+          "$ref": "#/$defs/agentOutput"
+        },
+        "A3": {
+          "$ref": "#/$defs/agentOutput"
+        },
+        "A4": {
+          "$ref": "#/$defs/agentOutput"
+        },
+        "A5": {
+          "$ref": "#/$defs/agentOutput"
+        }
+      }
+    },
+    "incident": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "affected_agent",
+        "compromise_vector",
+        "content_manipulation_type",
+        "context_injection",
+        "root_claim_id",
+        "root_evidence_ids"
+      ],
+      "properties": {
+        "affected_agent": {
+          "type": "string",
+          "enum": [
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ]
+        },
+        "compromise_vector": {
+          "type": "string",
+          "enum": [
+            "EXECUTION_CONTEXT_INJECTION",
+            "PROMPT_OR_POLICY_TAMPERING",
+            "PROVENANCE_TAMPERING",
+            "EVIDENCE_WITHHOLDING",
+            "MEMORY_STATE_TAMPERING",
+            "TOOL_OR_ACTION_MANIPULATION"
+          ]
+        },
+        "content_manipulation_type": {
+          "type": "string",
+          "enum": [
+            "FALSE_CLAIM_INJECTION",
+            "EVIDENCE_REINTERPRETATION",
+            "PROVENANCE_LAUNDERING",
+            "SELECTIVE_OMISSION",
+            "UNAUTHORIZED_ACTION_ATTEMPT",
+            "UNAUTHORIZED_ACTION_EXECUTION",
+            "UNAUTHORIZED_CONTENT_MODIFICATION",
+            "UNAUTHORIZED_STATE_MODIFICATION",
+            "UNAUTHORIZED_DATA_DISCLOSURE",
+            "CAPABILITY_MISREPRESENTATION"
+          ]
+        },
+        "context_injection": {
+          "type": "string",
+          "minLength": 1
+        },
+        "root_claim_id": {
+          "type": "string",
+          "pattern": "^A[1-5]-C[0-9]+$"
+        },
+        "root_evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^E[0-9]+$"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "claim_relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from_claim_id",
+          "to_claim_id",
+          "relation"
+        ],
+        "properties": {
+          "from_claim_id": {
+            "type": "string",
+            "pattern": "^A[1-5]-C[0-9]+$"
+          },
+          "to_claim_id": {
+            "type": "string",
+            "pattern": "^A[1-5]-C[0-9]+$"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "ADOPTED",
+              "AMPLIFIED",
+              "CHALLENGED",
+              "CORRECTED",
+              "LAUNDERED"
+            ]
+          }
+        }
+      }
+    },
+    "true_provenance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "source_claim_ids",
+          "source_evidence_ids"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "pattern": "^A[1-5]-C[0-9]+$"
+          },
+          "source_claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^A[1-5]-C[0-9]+$"
+            },
+            "uniqueItems": true
+          },
+          "source_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^E[0-9]+$"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "exposed_agents": {
+      "$ref": "#/$defs/agentList"
+    },
+    "contaminated_agents": {
+      "$ref": "#/$defs/agentList"
+    },
+    "corrective_agents": {
+      "$ref": "#/$defs/agentList"
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "final_output_contaminated",
+        "final_decision_affected",
+        "expected_domain_security_incident",
+        "observed_final_security_incident",
+        "final_decision_basis"
+      ],
+      "properties": {
+        "final_output_contaminated": {
+          "type": "boolean"
+        },
+        "final_decision_affected": {
+          "type": "boolean"
+        },
+        "expected_domain_security_incident": {
+          "type": "boolean"
+        },
+        "observed_final_security_incident": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Legacy diagnostic field for a functional-agent incident-status flag. In the current semantic benchmark cases this is intentionally null because functional agents do not adjudicate the hidden forensic execution-integrity incident status."
+        },
+        "final_decision_basis": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Case-curated semantic rationale for whether the agentic incident changed the substantive final domain decision/outcome. This label is not derived from A5.security_incident."
+        }
+      }
+    },
+    "external_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "occurred",
+        "description"
+      ],
+      "properties": {
+        "occurred": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "performed_after_agent": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "A1",
+                "A2",
+                "A3",
+                "A4",
+                "A5"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Controller timing anchor for an observed external action. Null when no external action occurred."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "agentList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "A1",
+          "A2",
+          "A3",
+          "A4",
+          "A5"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_id",
+        "statement",
+        "evidence_ids",
+        "upstream_claim_ids",
+        "confidence"
+      ],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "pattern": "^A[1-5]-C[0-9]+$"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^E[0-9]+$"
+          },
+          "uniqueItems": true
+        },
+        "upstream_claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^A[1-5]-C[0-9]+$"
+          },
+          "uniqueItems": true
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "agentOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agent_id",
+        "role",
+        "assessment",
+        "claims",
+        "security_incident",
+        "conclusion"
+      ],
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "enum": [
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assessment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/claim"
+          }
+        },
+        "security_incident": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Functional-agent incident-status metadata. The semantic benchmark requires null for A1-A5 so this field cannot encode hidden forensic roles or ground truth."
+        },
+        "conclusion": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
